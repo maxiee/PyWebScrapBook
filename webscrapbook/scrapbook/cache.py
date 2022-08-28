@@ -269,135 +269,6 @@ class StaticSiteGenerator():
         id_chain = {'root'}
         yield from add_child_items('root')
 
-
-class RssFeedGenerator():
-    """Main class for RSS feed generation.
-    """
-    NS = 'http://www.w3.org/2005/Atom'
-
-    def __init__(self, book, *, rss_root=None, item_count=50):
-        self.book = book
-        self.rss_root = rss_root.rstrip('/') + '/'
-        self.item_count = item_count
-
-        book.load_meta_files()
-        book.load_toc_files()
-
-    @dump_args
-    def run(self):
-        yield Info('info', 'Generating RSS feed...')
-
-        book = self.book
-        rss_root = self.rss_root
-
-        # RSS root must be an absolute URL
-        u = urlsplit(rss_root)
-        if not (u.scheme and u.netloc):
-            yield Info('error', f'Invalid RSS root URL "{rss_root}"')
-            return
-
-        id_prefix = re.sub(r'/+$', '', f'urn:webscrapbook:{u.netloc}{u.path}')
-        data_url = urljoin(rss_root, util.get_relative_url(book.data_dir, book.root))
-        tree_url = urljoin(rss_root, util.get_relative_url(book.tree_dir, book.root))
-
-        # get latest updated item entries
-        entries = []
-        for id, meta in book.meta.items():
-            # show only items with content,
-            # either with index or a bookmark with source
-            if meta.get('type') in {'folder', 'separator'}:
-                continue
-
-            if meta.get('type') != 'bookmark' and meta.get('index'):
-                pass
-            elif meta.get('type') == 'bookmark' and meta.get('source'):
-                pass
-            else:
-                continue
-
-            entries.append({
-                'id': id,
-                'modify': meta.get('modify', meta.get('create', '')),
-                'item': meta,
-                })
-        entries = sorted(entries, key=lambda d: d['modify'])
-        entries = list(reversed(entries))[:self.item_count]
-
-        # generate tree
-        root = etree.XML(f'<feed xmlns="{self.NS}"></feed>'.encode('UTF-8'))
-
-        elem = etree.SubElement(root, 'id')
-        elem.text = id_prefix
-
-        elem = etree.SubElement(root, 'link')
-        elem.attrib['rel'] = 'self'
-        elem.attrib['href'] = urljoin(tree_url, 'feed.atom')
-
-        elem = etree.SubElement(root, 'link')
-        elem.attrib['href'] = urljoin(tree_url, 'map.html')
-
-        elem = etree.SubElement(root, 'title')
-        elem.attrib['type'] = 'text'
-        elem.text = book.name
-
-        elem = etree.SubElement(root, 'updated')
-        if entries:
-            dt = util.id_to_datetime(entries[0]['modify'])
-        else:
-            dt = datetime.now(timezone.utc)
-        elem.text = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        for entry in entries:
-            entry_elem = etree.SubElement(root, 'entry')
-
-            elem = etree.SubElement(entry_elem, 'id')
-            elem.text = f'{id_prefix}:{quote(entry["id"])}'
-
-            elem = etree.SubElement(entry_elem, 'link')
-            if entry['item'].get('type') == 'bookmark':
-                elem.attrib['href'] = entry['item']['source']
-            else:
-                elem.attrib['href'] = urljoin(data_url, quote(entry['item']['index']))
-
-            elem = etree.SubElement(entry_elem, 'title')
-            elem.attrib['type'] = 'text'
-            elem.text = entry['item'].get('title', '')
-
-            elem = etree.SubElement(entry_elem, 'published')
-            dt = util.id_to_datetime(entry['item'].get('create', '')) or datetime.fromtimestamp(0, timezone.utc)
-            elem.text = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-            elem = etree.SubElement(entry_elem, 'updated')
-            dt = util.id_to_datetime(entry['modify']) or datetime.fromtimestamp(0, timezone.utc)
-            elem.text = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-            elem = etree.SubElement(entry_elem, 'author')
-            elem = etree.SubElement(elem, 'name')
-            elem.text = 'Anonymous'
-
-        # check whether writing is required
-        fsrc = io.BytesIO(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
-        fdst = os.path.normpath(os.path.join(self.book.tree_dir, 'feed.atom'))
-
-        if os.path.isfile(fdst):
-            if fsrc.getbuffer().nbytes == os.stat(fdst).st_size:
-                fsrc.seek(0)
-                if util.checksum(fsrc) == util.checksum(fdst):
-                    yield Info('debug', 'Skipped RSS feed (up-to-date)')
-                    return
-
-        # save file
-        yield Info('info', 'Generating RSS feed file "feed.atom"')
-        try:
-            fsrc.seek(0)
-            os.makedirs(os.path.dirname(fdst), exist_ok=True)
-            self.book.backup(fdst)
-            with open(fdst, 'wb') as fh:
-                shutil.copyfileobj(fsrc, fh)
-        except OSError as exc:
-            yield Info('error', f'Failed to create RSS feed file "feed.atom": {exc.strerror}', exc=exc)
-
-
 FulltextCacheItem = namedtuple('FulltextCacheItem', ['id', 'meta', 'index', 'indexfile', 'files_to_update'])
 
 class FulltextCacheGenerator():
@@ -906,6 +777,10 @@ def generate(root, book_ids=None, item_ids=None, *,
         fulltext=True, inclusive_frames=True, recreate=False,
         static_site=False, static_index=False, locale=None,
         rss_root=None, rss_item_count=50):
+    """
+    deprecated:
+        rss_root: no use
+    """
     start = time.time()
 
     host = Host(root, config)
@@ -946,14 +821,6 @@ def generate(root, book_ids=None, item_ids=None, *,
                             book,
                             static_index=static_index,
                             locale=locale, rss=bool(rss_root),
-                            )
-                        yield from generator.run()
-
-                    if rss_root:
-                        generator = RssFeedGenerator(
-                            book,
-                            rss_root=rss_root,
-                            item_count=rss_item_count,
                             )
                         yield from generator.run()
 
