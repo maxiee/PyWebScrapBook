@@ -1724,6 +1724,7 @@ def action_unbackup():
 
 
 @handle_action_token
+@dump_args
 def action_cache():
     """Invoke the cacher."""
     format = request.format
@@ -1742,6 +1743,9 @@ def action_cache():
         'rss_item_count': request.values.get('rss_item_count', default=50, type=int),
         'locale': request.values.get('locale'),
         }
+    
+    print(f'{format=}')
+    print(f'{kwargs=}')
 
     headers = {
         'Cache-Control': 'no-store',
@@ -1758,8 +1762,11 @@ def action_cache():
                     }
 
                 yield json.dumps(data, ensure_ascii=False)
+        
+        g = list(gen())
+        print(f'http_response gen = {g}')
 
-        return http_response(gen(), headers=headers, format=format)
+        return http_response(g, headers=headers, format=format)
 
     elif format:
         abort(400, "Action not supported.")
@@ -1772,6 +1779,8 @@ def action_cache():
         messages=gen(),
         debug=False,
         )
+    
+    print(f'ret stream = {str(stream)}')
 
     return Response(stream, headers=headers)
 
