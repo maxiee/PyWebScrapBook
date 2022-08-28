@@ -1727,63 +1727,7 @@ def action_unbackup():
 @dump_args
 def action_cache():
     """Invoke the cacher."""
-    format = request.format
-
-    kwargs = {
-        'book_ids': request.values.getlist('book'),
-        'item_ids': request.values.getlist('item'),
-        'no_lock': request.values.get('no_lock', default=False, type=bool),
-        'no_backup': request.values.get('no_backup', default=False, type=bool),
-        'fulltext': request.values.get('fulltext', default=False, type=bool),
-        'inclusive_frames': request.values.get('inclusive_frames', default=False, type=bool),
-        'recreate': request.values.get('recreate', default=False, type=bool),
-        'static_site': request.values.get('static_site', default=False, type=bool),
-        'static_index': request.values.get('static_index', default=False, type=bool),
-        'rss_root': request.values.get('rss_root'),
-        'rss_item_count': request.values.get('rss_item_count', default=50, type=int),
-        'locale': request.values.get('locale'),
-        }
-    
-    print(f'{format=}')
-    print(f'{kwargs=}')
-
-    headers = {
-        'Cache-Control': 'no-store',
-        }
-    root = host.root
-    config = host.config
-
-    if format == 'sse':
-        def gen():
-            for info in wsb_cache.generate(root, config=config, **kwargs):
-                data = {
-                    'type': info.type,
-                    'msg': info.msg,
-                    }
-
-                yield json.dumps(data, ensure_ascii=False)
-        
-        g = list(gen())
-        print(f'http_response gen = {g}')
-
-        return http_response(g, headers=headers, format=format)
-
-    elif format:
-        abort(400, "Action not supported.")
-
-    def gen():
-        yield from wsb_cache.generate(root, config=config, **kwargs)
-
-    stream = stream_template('cli.html',
-        title=f'Indexing...',
-        messages=gen(),
-        debug=False,
-        )
-    
-    print(f'ret stream = {str(stream)}')
-
-    return Response(stream, headers=headers)
-
+    print('maxiee deprecated')
 
 @handle_action_token
 def action_check():
