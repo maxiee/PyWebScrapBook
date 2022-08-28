@@ -1422,6 +1422,11 @@ def action_save():
     format = request.format
     localpaths = request.localpaths
 
+    print(request)
+    print(f'action_save url = {request.path}')
+    print(f'action_save format = {format}')
+    print(f'action_save localpaths = {localpaths}')
+
     if len(localpaths) > 1:
         try:
             zip = None
@@ -1471,6 +1476,7 @@ def action_save():
 
         try:
             file = request.files.get('upload')
+            print(f'action_save files = {request.files}')
             if file is not None:
                 file.save(localpath)
             else:

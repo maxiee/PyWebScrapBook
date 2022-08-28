@@ -8,6 +8,8 @@ import copy
 from urllib.parse import urlsplit, unquote
 from datetime import datetime
 
+from webscrapbook.utils.dump_args import dump_args
+
 from .. import WSB_DIR
 from .host import Host
 from .book import TreeFileError, Book
@@ -54,6 +56,7 @@ class BookChecker:
 
         self.wsb_dir = os.path.join(book.root, WSB_DIR)
 
+    @dump_args
     def run(self):
         self.seen_in_toc = set()
         self.find_index_exclude = set()

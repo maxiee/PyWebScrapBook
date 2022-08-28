@@ -19,6 +19,8 @@ from datetime import datetime, timezone
 import jinja2
 from lxml import etree
 
+from webscrapbook.utils.dump_args import dump_args
+
 from .host import Host
 from .. import util
 from ..util import Info
@@ -100,6 +102,7 @@ class StaticSiteGenerator():
         book.load_meta_files()
         book.load_toc_files()
 
+    @dump_args
     def run(self):
         yield Info('info', 'Generating static site pages...')
 
@@ -280,6 +283,7 @@ class RssFeedGenerator():
         book.load_meta_files()
         book.load_toc_files()
 
+    @dump_args
     def run(self):
         yield Info('info', 'Generating RSS feed...')
 
@@ -419,6 +423,7 @@ class FulltextCacheGenerator():
         self.recreate = recreate
         self.cache_last_modified = 0
 
+    @dump_args
     def run(self, item_ids=None):
         """Update fulltext cache for item_ids
 
@@ -895,7 +900,7 @@ class FulltextCacheGenerator():
         text = fh.read().decode(charset, errors='replace')
         return self.FULLTEXT_SPACE_REPLACER(text).strip()
 
-
+@dump_args
 def generate(root, book_ids=None, item_ids=None, *,
         config=None, no_lock=False, no_backup=False,
         fulltext=True, inclusive_frames=True, recreate=False,

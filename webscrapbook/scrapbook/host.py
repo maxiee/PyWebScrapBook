@@ -7,6 +7,8 @@ import time
 from collections import UserDict
 from threading import Thread
 from secrets import token_urlsafe
+
+from webscrapbook.utils.dump_args import dump_args
 from .. import WSB_USER_DIR, WSB_DIR
 from .. import Config
 from .. import util
@@ -296,11 +298,13 @@ class BooksProxy(UserDict):
     """
     def __init__(self, host):
         super().__init__()
+        print(f'BooksProxy __init__ {host=}')
         self.host = host
         for book_id in host.config['book']:
             self.data[book_id] = NotImplemented
 
     def __getitem__(self, key):
+        print(f'BooksProxy __getitem__ {key=}')
         rv = self.data[key]
         if rv is NotImplemented:
             rv = self.data[key] = Book(self.host, key)
