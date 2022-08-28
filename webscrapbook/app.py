@@ -804,7 +804,7 @@ def action_unknown():
     """Default handler for an undefined action"""
     abort(400, "Action not supported.")
 
-
+@dump_args
 def action_view():
     """Show the content of a file or list a directory.
 
@@ -913,7 +913,7 @@ def action_view():
 
     return response
 
-
+@dump_args
 def action_source():
     """Show file content as plain text."""
     if request.format:
@@ -1009,7 +1009,7 @@ def action_download():
             f'''attachment; filename*=UTF-8''{filename}; filename="{filename}"''')
     return response
 
-
+@dump_args
 def action_info():
     """Show information of a path."""
     format = request.format
@@ -1035,7 +1035,7 @@ def action_info():
         }
     return http_response(data, format=format)
 
-
+@dump_args
 def action_list():
     """List entries in a directory."""
     format = request.format
@@ -1056,7 +1056,7 @@ def action_list():
 
     abort(404, "Directory does not exist.")
 
-
+@dump_args
 def action_static():
     """Show a static file of the current theme."""
     format = request.format
@@ -1071,7 +1071,7 @@ def action_static():
 
     abort(404)
 
-
+@dump_args
 def action_edit():
     """Simple text editor for a file."""
     format = request.format
@@ -1120,7 +1120,7 @@ def action_edit():
 
     return http_response(body, format=format)
 
-
+@dump_args
 def action_editx():
     """HTML editor for a file."""
     format = request.format
@@ -1156,7 +1156,7 @@ def action_editx():
 
     return http_response(body, format=format)
 
-
+@dump_args
 def action_exec():
     """Launch a file or directory."""
     format = request.format
@@ -1176,7 +1176,7 @@ def action_exec():
 
     return http_response(status=204)
 
-
+@dump_args
 def action_browse():
     """Open a file or directory in the file browser."""
     format = request.format
@@ -1196,7 +1196,7 @@ def action_browse():
 
     return http_response(status=204)
 
-
+@dump_args
 def action_config():
     """Show server config."""
     format = request.format
@@ -1224,7 +1224,7 @@ def action_config():
 
     return http_response(data, format=format)
 
-
+@dump_args
 def action_token():
     """Acquire a token and return its name."""
     format = request.format
@@ -1238,6 +1238,7 @@ def action_token():
 
 @handle_action_advanced
 @handle_action_token
+@dump_args
 def action_lock():
     """Acquire a lock for the given name.
 
@@ -1284,6 +1285,7 @@ def action_lock():
 
 @handle_action_advanced
 @handle_action_token
+@dump_args
 def action_unlock():
     """Release a lock for the given name."""
     # verify name
@@ -1312,6 +1314,7 @@ def action_unlock():
 @handle_action_advanced
 @handle_action_token
 @handle_action_writing
+@dump_args
 def action_mkdir():
     """Create a directory."""
     format = request.format
@@ -1360,6 +1363,7 @@ def action_mkdir():
 @handle_action_advanced
 @handle_action_token
 @handle_action_writing
+@dump_args
 def action_mkzip():
     """Create a zip file."""
     format = request.format
