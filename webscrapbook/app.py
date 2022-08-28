@@ -30,6 +30,8 @@ from werkzeug.utils import cached_property
 import jinja2
 import commonmark
 
+from webscrapbook.utils.dump_args import dump_args
+
 # this package
 from . import *
 from . import __version__
@@ -1414,6 +1416,7 @@ def action_mkzip():
 @handle_action_advanced
 @handle_action_token
 @handle_action_writing
+@dump_args
 def action_save():
     """Write a file with provided text or uploaded stream."""
     format = request.format
