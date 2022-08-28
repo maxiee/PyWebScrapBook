@@ -1727,6 +1727,7 @@ def action_unbackup():
 def action_cache():
     """Invoke the cacher."""
     print('maxiee deprecated')
+    return http_response('ok')
 
 @handle_action_token
 def action_check():
