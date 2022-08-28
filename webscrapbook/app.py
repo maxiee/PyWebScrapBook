@@ -38,7 +38,6 @@ from . import __version__
 from . import Config
 from . import util
 from .scrapbook import host as wsb_host
-from .scrapbook import cache as wsb_cache
 from .scrapbook import check as wsb_check
 from ._compat.contextlib import nullcontext
 from ._compat import zip_stream
